@@ -45,8 +45,12 @@ class EnergyFileParser:
         available = [c for c in df.columns if str(c).lower() not in ("time", "frame")]
 
         total_ns = None
-        if time_col == "Time" and not df[time_col].isnull().all():
-            total_ns = (df[time_col].iloc[-1] - df[time_col].iloc[0]) / 1000.0
+        if time_col == "Time":
+            valid_times = df[time_col].dropna()
+            if not valid_times.empty:
+                # Use the valid time range instead of assuming the last row is valid
+                # or that the input rows are strictly ordered.
+                total_ns = (valid_times.max() - valid_times.min()) / 1000.0
 
         return EnergyData(
             df=df,
